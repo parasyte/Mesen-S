@@ -15,6 +15,7 @@ private:
 	uint8_t _byteCode[4];
 	uint8_t _opSize;
 	uint8_t _flags;
+	uint8_t _valueSize;
 	CpuType _cpuType;
 	bool _initialized = false;
 
@@ -33,6 +34,7 @@ public:
 	CpuType GetCpuType();
 	uint8_t GetOpCode();
 	uint8_t GetOpSize();
+	uint8_t GetValueSize();
 	uint8_t GetFlags();
 	uint8_t* GetByteCode();
 
@@ -40,6 +42,7 @@ public:
 	void GetByteCode(string &out);
 
 	static uint8_t GetOpSize(uint8_t opCode, uint8_t flags, CpuType type);
+	static uint8_t GetValueSize(uint8_t opCode, uint8_t flags, CpuType type);
 	static bool IsJumpToSub(uint8_t opCode, CpuType type);
 	static bool IsReturnInstruction(uint8_t opCode, CpuType type);
 

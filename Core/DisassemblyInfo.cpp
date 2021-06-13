@@ -28,6 +28,7 @@ void DisassemblyInfo::Initialize(uint8_t *opPointer, uint8_t cpuFlags, CpuType t
 	_cpuType = type;
 	_flags = cpuFlags;
 	_opSize = GetOpSize(opPointer[0], _flags, _cpuType);
+	_valueSize = GetValueSize(opPointer[0], _flags, _cpuType);
 	memcpy(_byteCode, opPointer, _opSize);
 
 	_initialized = true;
@@ -115,6 +116,11 @@ uint8_t DisassemblyInfo::GetOpSize()
 	return _opSize;
 }
 
+uint8_t DisassemblyInfo::GetValueSize()
+{
+	return _valueSize;
+}
+
 uint8_t DisassemblyInfo::GetFlags()
 {
 	return _flags;
@@ -167,6 +173,18 @@ uint8_t DisassemblyInfo::GetOpSize(uint8_t opCode, uint8_t flags, CpuType type)
 		case CpuType::Gameboy: return GameboyDisUtils::GetOpSize(opCode);
 	}
 	return 0;
+}
+
+
+uint8_t DisassemblyInfo::GetValueSize(uint8_t opCode, uint8_t flags, CpuType type)
+{
+	if(type == CpuType::Sa1 || type == CpuType::Cpu) {
+		return CpuDisUtils::GetValueSize(opCode, flags);
+	} else if((type == CpuType::Spc || type == CpuType::Gameboy)) {
+		return 1;
+	} else {
+		return 2;
+	}
 }
 
 //TODO: This is never called, removed?
@@ -261,11 +279,10 @@ void DisassemblyInfo::UpdateCpuFlags(uint8_t& cpuFlags)
 
 uint16_t DisassemblyInfo::GetMemoryValue(uint32_t effectiveAddress, MemoryDumper *memoryDumper, SnesMemoryType memType, uint8_t &valueSize)
 {
-	if((_cpuType == CpuType::Spc || _cpuType == CpuType::Gameboy) || (_flags & ProcFlags::MemoryMode8)) {
-		valueSize = 1;
+	valueSize = GetValueSize();
+	if (valueSize == 1) {
 		return memoryDumper->GetMemoryValue(memType, effectiveAddress);
 	} else {
-		valueSize = 2;
 		return memoryDumper->GetMemoryValueWord(memType, effectiveAddress);
 	}
 }

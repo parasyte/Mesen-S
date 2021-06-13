@@ -175,6 +175,22 @@ uint8_t CpuDisUtils::GetOpSize(uint8_t opCode, uint8_t flags)
 	return GetOpSize(CpuDisUtils::OpMode[opCode], flags);
 }
 
+uint8_t CpuDisUtils::GetValueSize(uint8_t opCode, uint8_t flags)
+{
+	// TODO
+	switch (CpuDisUtils::OpValueMode[opCode]) {
+		case ValueMode::None:
+		case ValueMode::Both:
+			return 0;
+
+		case ValueMode::MemAcc:
+			return (flags & ProcFlags::MemoryMode8) ? 1 : 2;
+
+		case ValueMode::Index:
+			return (flags & ProcFlags::IndexMode8) ? 1 : 2;
+	}
+}
+
 uint8_t CpuDisUtils::OpSize[0x1F] = {
 	2, 2, 3, 0, 0, 3, 3, 3, 3, 3,
 	3, 4, 4, 3, 4, 1, 3, 2, 2, 2,
@@ -221,4 +237,25 @@ AddrMode CpuDisUtils::OpMode[256] = {
 	M::Rel,   M::DirIndIdxY, M::DirInd,   M::StkRelIndIdxY, M::Dir,     M::DirIdxX, M::DirIdxX, M::DirIndLngIdxY, M::Imp, M::AbsIdxY, M::Stk, M::Imp, M::AbsIndLng,  M::AbsIdxX, M::AbsIdxX, M::AbsLngIdxX, // D
 	M::ImmX,  M::DirIdxIndX, M::Imm8,     M::StkRel,        M::Dir,     M::Dir,     M::Dir,     M::DirIndLng,     M::Imp, M::ImmM,    M::Imp, M::Imp, M::Abs,        M::Abs,     M::Abs,     M::AbsLng,     // E
 	M::Rel,   M::DirIndIdxY, M::DirInd,   M::StkRelIndIdxY, M::Imm16,   M::DirIdxX, M::DirIdxX, M::DirIndLngIdxY, M::Imp, M::AbsIdxY, M::Stk, M::Imp, M::AbsIdxXInd, M::AbsIdxX, M::AbsIdxX, M::AbsLngIdxX  // F
+};
+
+typedef ValueMode V;
+ValueMode CpuDisUtils::OpValueMode[256] = {
+	//0        1          2          3          4          5          6          7          8          9          A          B          C          D          E          F
+	V::None,   V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, // 0
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, // 1
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, // 2
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, // 3
+	V::None,   V::MemAcc, V::None,   V::MemAcc, V::Both,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::None,   V::MemAcc, V::MemAcc, V::MemAcc, // 4
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::Both,   V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::Index,  V::None,   V::None,   V::MemAcc, V::MemAcc, V::MemAcc, // 5
+	V::None,   V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::None,   V::MemAcc, V::MemAcc, V::MemAcc, // 6
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::Index,  V::None,   V::None,   V::MemAcc, V::MemAcc, V::MemAcc, // 7
+	V::None,   V::MemAcc, V::None,   V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::MemAcc, V::None,   V::Index,  V::MemAcc, V::Index,  V::MemAcc, // 8
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::MemAcc, V::MemAcc, V::Index,  V::Index,  V::MemAcc, V::MemAcc, V::MemAcc, V::MemAcc, // 9
+	V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::None,   V::Index,  V::MemAcc, V::Index,  V::MemAcc, // A
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::MemAcc, V::None,   V::MemAcc, V::Index,  V::Index,  V::Index,  V::MemAcc, V::Index,  V::MemAcc, // B
+	V::Index,  V::MemAcc, V::None,   V::MemAcc, V::Index,  V::MemAcc, V::MemAcc, V::MemAcc, V::Index,  V::MemAcc, V::Index,  V::None,   V::Index,  V::MemAcc, V::MemAcc, V::MemAcc, // C
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::Index,  V::None,   V::None,   V::MemAcc, V::MemAcc, V::MemAcc, // D
+	V::Index,  V::MemAcc, V::None,   V::MemAcc, V::Index,  V::MemAcc, V::MemAcc, V::MemAcc, V::Index,  V::MemAcc, V::None,   V::None,   V::Index,  V::MemAcc, V::MemAcc, V::MemAcc, // E
+	V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::MemAcc, V::MemAcc, V::None,   V::MemAcc, V::Index,  V::None,   V::None,   V::MemAcc, V::MemAcc, V::MemAcc, // F
 };
